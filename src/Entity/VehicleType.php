@@ -1,5 +1,19 @@
 <?php
 
+/*
+ * This file is part of the GrandoGo project.
+ *
+ * (c) Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+/*
+ * @author Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ */
+
 namespace App\Entity;
 
 use App\Repository\VehicleTypeRepository;
@@ -52,6 +66,7 @@ class VehicleType extends BaseEntity
     public function setName(string $name): self
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -63,6 +78,7 @@ class VehicleType extends BaseEntity
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -74,6 +90,7 @@ class VehicleType extends BaseEntity
     public function setBaseRate(?float $baseRate): self
     {
         $this->baseRate = $baseRate;
+
         return $this;
     }
 
@@ -85,6 +102,7 @@ class VehicleType extends BaseEntity
     public function setEnabled(bool $enabled): self
     {
         $this->enabled = $enabled;
+
         return $this;
     }
 
@@ -96,6 +114,7 @@ class VehicleType extends BaseEntity
     public function setPassengerCapacity(int $passengerCapacity): self
     {
         $this->passengerCapacity = $passengerCapacity;
+
         return $this;
     }
 
@@ -107,6 +126,7 @@ class VehicleType extends BaseEntity
     public function setLuggageCapacity(int $luggageCapacity): self
     {
         $this->luggageCapacity = $luggageCapacity;
+
         return $this;
     }
 

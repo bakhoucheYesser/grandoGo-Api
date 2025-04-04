@@ -1,5 +1,19 @@
 <?php
 
+/*
+ * This file is part of the GrandoGo project.
+ *
+ * (c) Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+/*
+ * @author Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ */
+
 namespace App\Entity;
 
 use App\Repository\ProviderVehicleRepository;
@@ -65,6 +79,7 @@ class ProviderVehicle extends BaseEntity
     public function setProvider(?Provider $provider): self
     {
         $this->provider = $provider;
+
         return $this;
     }
 
@@ -76,6 +91,7 @@ class ProviderVehicle extends BaseEntity
     public function setMake(string $make): self
     {
         $this->make = $make;
+
         return $this;
     }
 
@@ -87,6 +103,7 @@ class ProviderVehicle extends BaseEntity
     public function setModel(string $model): self
     {
         $this->model = $model;
+
         return $this;
     }
 
@@ -98,6 +115,7 @@ class ProviderVehicle extends BaseEntity
     public function setYear(string $year): self
     {
         $this->year = $year;
+
         return $this;
     }
 
@@ -109,6 +127,7 @@ class ProviderVehicle extends BaseEntity
     public function setColor(?string $color): self
     {
         $this->color = $color;
+
         return $this;
     }
 
@@ -120,6 +139,7 @@ class ProviderVehicle extends BaseEntity
     public function setType(string $type): self
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -131,6 +151,7 @@ class ProviderVehicle extends BaseEntity
     public function setLicensePlate(string $licensePlate): self
     {
         $this->licensePlate = $licensePlate;
+
         return $this;
     }
 
@@ -142,6 +163,7 @@ class ProviderVehicle extends BaseEntity
     public function setAvailable(bool $available): self
     {
         $this->available = $available;
+
         return $this;
     }
 
@@ -153,6 +175,7 @@ class ProviderVehicle extends BaseEntity
     public function setVerified(bool $verified): self
     {
         $this->verified = $verified;
+
         return $this;
     }
 
@@ -169,7 +192,7 @@ class ProviderVehicle extends BaseEntity
     public function setVehicleType(?VehicleType $vehicleType): self
     {
         $this->vehicleType = $vehicleType;
+
         return $this;
     }
-
 }

@@ -1,5 +1,19 @@
 <?php
 
+/*
+ * This file is part of the GrandoGo project.
+ *
+ * (c) Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+/*
+ * @author Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ */
+
 namespace App\Entity;
 
 use App\Repository\TransactionRepository;
@@ -58,6 +72,7 @@ class Transaction extends BaseEntity
     public function setCustomer(?Customer $customer): self
     {
         $this->customer = $customer;
+
         return $this;
     }
 
@@ -69,6 +84,7 @@ class Transaction extends BaseEntity
     public function setBooking(?Booking $booking): self
     {
         $this->booking = $booking;
+
         return $this;
     }
 
@@ -80,6 +96,7 @@ class Transaction extends BaseEntity
     public function setType(string $type): self
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -91,6 +108,7 @@ class Transaction extends BaseEntity
     public function setAmount(float $amount): self
     {
         $this->amount = $amount;
+
         return $this;
     }
 
@@ -102,6 +120,7 @@ class Transaction extends BaseEntity
     public function setPaymentMethod(string $paymentMethod): self
     {
         $this->paymentMethod = $paymentMethod;
+
         return $this;
     }
 
@@ -113,6 +132,7 @@ class Transaction extends BaseEntity
     public function setStripeTransactionId(?string $stripeTransactionId): self
     {
         $this->stripeTransactionId = $stripeTransactionId;
+
         return $this;
     }
 
@@ -124,6 +144,7 @@ class Transaction extends BaseEntity
     public function setStatus(string $status): self
     {
         $this->status = $status;
+
         return $this;
     }
 
@@ -135,6 +156,7 @@ class Transaction extends BaseEntity
     public function setNotes(?string $notes): self
     {
         $this->notes = $notes;
+
         return $this;
     }
 }

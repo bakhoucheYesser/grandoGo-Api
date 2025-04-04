@@ -1,4 +1,15 @@
 <?php
+
+/*
+ * This file is part of the GrandoGo project.
+ *
+ * (c) Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
 /*
  * @author Yesser Bkhouch <yesserbakhouch@hotmail.com>
  */
@@ -355,7 +366,7 @@ class Booking extends BaseEntity
         return $this->status;
     }
 
-    public function setStatus(string $status, ?string $notes = null): self
+    public function setStatus(string $status, string $notes = null): self
     {
         $oldStatus = $this->status;
         $this->status = $status;
@@ -659,7 +670,7 @@ class Booking extends BaseEntity
             self::STATUS_UNLOADING,
         ];
 
-        return in_array($this->status, $activeStatuses);
+        return \in_array($this->status, $activeStatuses, true);
     }
 
     /**
@@ -673,7 +684,7 @@ class Booking extends BaseEntity
             self::STATUS_ASSIGNED,
         ];
 
-        return in_array($this->status, $cancellableStatuses);
+        return \in_array($this->status, $cancellableStatuses, true);
     }
 
     /**

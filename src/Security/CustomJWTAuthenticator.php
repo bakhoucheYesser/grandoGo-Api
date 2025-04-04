@@ -1,11 +1,24 @@
 <?php
 
+/*
+ * This file is part of the GrandoGo project.
+ *
+ * (c) Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+/*
+ * @author Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ */
+
 namespace App\Security;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +40,7 @@ class CustomJWTAuthenticator extends AbstractAuthenticator
     public function __construct(
         JWTTokenManagerInterface $jwtManager,
         UserPasswordHasherInterface $passwordHasher,
-        UserRepository $userRepository
+        UserRepository $userRepository,
     ) {
         $this->jwtManager = $jwtManager;
         $this->passwordHasher = $passwordHasher;
@@ -36,17 +49,17 @@ class CustomJWTAuthenticator extends AbstractAuthenticator
 
     public function supports(Request $request): ?bool
     {
-        return in_array($request->getPathInfo(), [
-                '/api/login',
-                '/api/token/refresh'
-            ]) && $request->isMethod('POST');
+        return \in_array($request->getPathInfo(), [
+            '/api/login',
+            '/api/token/refresh',
+        ], true) && $request->isMethod('POST');
     }
 
     public function authenticate(Request $request): Passport
     {
         $credentials = $request->toArray();
 
-        if ($request->getPathInfo() === '/api/token/refresh') {
+        if ('/api/token/refresh' === $request->getPathInfo()) {
             return $this->handleRefreshTokenAuthentication($credentials);
         }
 
@@ -55,13 +68,12 @@ class CustomJWTAuthenticator extends AbstractAuthenticator
 
     private function handleLoginAuthentication(array $credentials): Passport
     {
-        // Add more robust validation
         if (empty($credentials['email']) || empty($credentials['password'])) {
             throw new AuthenticationException('Email and password are required');
         }
 
         return new Passport(
-            new UserBadge($credentials['email'], function($email) {
+            new UserBadge($credentials['email'], function ($email) {
                 $user = $this->userRepository->findOneBy(['email' => $email]);
 
                 if (!$user) {
@@ -91,12 +103,9 @@ class CustomJWTAuthenticator extends AbstractAuthenticator
             }
 
             return new Passport(
-                new UserBadge($user->getEmail(), function() use ($user) {
-                    return $user;
-                }),
+                new UserBadge($user->getEmail(), fn () => $user),
                 new PasswordCredentials($user->getPassword())
             );
-
         } catch (\Exception $e) {
             throw new AuthenticationException('Invalid refresh token');
         }
@@ -108,30 +117,31 @@ class CustomJWTAuthenticator extends AbstractAuthenticator
         $user = $token->getUser();
 
         $accessToken = $this->jwtManager->create($user);
-        $refreshToken = $this->jwtManager->create($user,);
+        $refreshToken = $this->jwtManager->create($user);
         $userData = [
             'id' => $user->getId(),
             'email' => $user->getEmail(),
             'roles' => $user->getRoles(),
             'firstName' => $user->getFirstName(),
             'lastName' => $user->getLastName(),
-            'phoneNumber' => $user->getPhoneNumber()
+            'phoneNumber' => $user->getPhoneNumber(),
         ];
 
         // Return response
         return new JsonResponse([
             'token' => $accessToken,
             'refresh_token' => $refreshToken,
-            'user' => $userData
+            'user' => $userData,
         ]);
     }
+
     private function generateRefreshToken(User $user): string
     {
         $payload = [
             'sub' => $user->getId(),
             'email' => $user->getEmail(),
             'type' => 'refresh',
-            'exp' => time() + (30 * 24 * 60 * 60) // 30 days
+            'exp' => time() + (30 * 24 * 60 * 60), // 30 days
         ];
 
         return $this->jwtManager->create($user, $payload);
@@ -140,6 +150,7 @@ class CustomJWTAuthenticator extends AbstractAuthenticator
     private function isMobileClient(Request $request): bool
     {
         $userAgent = $request->headers->get('User-Agent', '');
+
         return preg_match('/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i', $userAgent);
     }
 
@@ -147,7 +158,7 @@ class CustomJWTAuthenticator extends AbstractAuthenticator
     {
         return new JsonResponse([
             'error' => 'Authentication failed',
-            'message' => $exception->getMessage()
+            'message' => $exception->getMessage(),
         ], Response::HTTP_UNAUTHORIZED);
     }
 }

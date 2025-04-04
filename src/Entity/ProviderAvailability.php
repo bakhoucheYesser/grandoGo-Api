@@ -1,5 +1,19 @@
 <?php
 
+/*
+ * This file is part of the GrandoGo project.
+ *
+ * (c) Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+/*
+ * @author Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ */
+
 namespace App\Entity;
 
 use App\Repository\ProviderAvailabilityRepository;
@@ -40,6 +54,7 @@ class ProviderAvailability extends BaseEntity
     public function setProvider(?Provider $provider): self
     {
         $this->provider = $provider;
+
         return $this;
     }
 
@@ -51,6 +66,7 @@ class ProviderAvailability extends BaseEntity
     public function setDayOfWeek(string $dayOfWeek): self
     {
         $this->dayOfWeek = $dayOfWeek;
+
         return $this;
     }
 
@@ -62,6 +78,7 @@ class ProviderAvailability extends BaseEntity
     public function setStartTime(?\DateTimeInterface $startTime): self
     {
         $this->startTime = $startTime;
+
         return $this;
     }
 
@@ -73,6 +90,7 @@ class ProviderAvailability extends BaseEntity
     public function setEndTime(?\DateTimeInterface $endTime): self
     {
         $this->endTime = $endTime;
+
         return $this;
     }
 
@@ -84,14 +102,15 @@ class ProviderAvailability extends BaseEntity
     public function setIsAvailable(bool $isAvailable): self
     {
         $this->isAvailable = $isAvailable;
+
         return $this;
     }
 
     public function isValidTimeSlot(): bool
     {
-        return $this->isAvailable &&
-            $this->startTime !== null &&
-            $this->endTime !== null &&
-            $this->startTime < $this->endTime;
+        return $this->isAvailable
+            && null !== $this->startTime
+            && null !== $this->endTime
+            && $this->startTime < $this->endTime;
     }
 }
