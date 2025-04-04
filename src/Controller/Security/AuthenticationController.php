@@ -1,5 +1,19 @@
 <?php
 
+/*
+ * This file is part of the GrandoGo project.
+ *
+ * (c) Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+/*
+ * @author Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ */
+
 namespace App\Controller\Security;
 
 use App\Entity\User;
@@ -14,30 +28,21 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api', name: 'app_auth_')]
 class AuthenticationController extends AbstractController
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
-        private UserPasswordHasherInterface $passwordHasher,
-        private ValidatorInterface $validator
-    ) {}
-
-
+        private readonly EntityManagerInterface $entityManager,
+        private readonly UserPasswordHasherInterface $passwordHasher,
+    ) {
+    }
 
     #[Route('/logout', name: 'logout', methods: ['POST'])]
     public function logout(TokenStorageInterface $tokenStorage): JsonResponse
     {
-        // Clear the token storage
         $tokenStorage->setToken(null);
-
-        // Create response with cleared cookies
         $response = $this->json(['message' => 'Logged out successfully']);
-
-        // Clear authentication cookies
         $response->headers->clearCookie('JWT_TOKEN');
         $response->headers->clearCookie('REFRESH_TOKEN');
 
@@ -49,7 +54,7 @@ class AuthenticationController extends AbstractController
     {
         if (!$user) {
             return $this->json([
-                'authenticated' => false
+                'authenticated' => false,
             ], Response::HTTP_UNAUTHORIZED);
         }
 
@@ -58,8 +63,8 @@ class AuthenticationController extends AbstractController
             'user' => [
                 'id' => $user->getId(),
                 'username' => $user->getUserIdentifier(),
-                'roles' => $user->getRoles()
-            ]
+                'roles' => $user->getRoles(),
+            ],
         ]);
     }
 
@@ -72,46 +77,36 @@ class AuthenticationController extends AbstractController
 
             if (!$refreshToken) {
                 return $this->json([
-                    'error' => 'Refresh token is required'
+                    'error' => 'Refresh token is required',
                 ], Response::HTTP_BAD_REQUEST);
             }
 
             try {
-                // Parse the refresh token
                 $payload = $jwtManager->parse($refreshToken);
-
-                // Find user
                 $user = $userRepository->find($payload['sub'] ?? null);
-
                 if (!$user) {
                     return $this->json([
-                        'error' => 'User not found'
+                        'error' => 'User not found',
                     ], Response::HTTP_UNAUTHORIZED);
                 }
 
-                // Generate new tokens
                 $accessToken = $jwtManager->create($user);
-                $newRefreshToken = $jwtManager->create($user, [
-                    'sub' => $user->getId(),
-                    'type' => 'refresh',
-                    'exp' => time() + (30 * 24 * 60 * 60) // 30 days
-                ]);
+                $newRefreshToken = $jwtManager->create($user);
 
                 return $this->json([
                     'token' => $accessToken,
-                    'refresh_token' => $newRefreshToken
+                    'refresh_token' => $newRefreshToken,
                 ]);
-
             } catch (\Exception $e) {
                 return $this->json([
                     'error' => 'Invalid refresh token',
-                    'message' => $e->getMessage()
+                    'message' => $e->getMessage(),
                 ], Response::HTTP_UNAUTHORIZED);
             }
         } catch (\Exception $e) {
             return $this->json([
                 'error' => 'Unexpected error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -119,11 +114,11 @@ class AuthenticationController extends AbstractController
     #[Route('/change-password', name: 'change_password', methods: ['POST'])]
     public function changePassword(
         Request $request,
-        #[CurrentUser] ?User $user
+        #[CurrentUser] ?User $user,
     ): JsonResponse {
         if (!$user) {
             return $this->json([
-                'error' => 'Authentication required'
+                'error' => 'Authentication required',
             ], Response::HTTP_UNAUTHORIZED);
         }
 
@@ -132,23 +127,20 @@ class AuthenticationController extends AbstractController
         // Verify current password
         if (!$this->passwordHasher->isPasswordValid($user, $data['current_password'] ?? '')) {
             return $this->json([
-                'error' => 'Current password is incorrect'
+                'error' => 'Current password is incorrect',
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        // Hash new password
         $newHashedPassword = $this->passwordHasher->hashPassword(
             $user,
             $data['new_password'] ?? ''
         );
 
-        // Update password
         $user->setPassword($newHashedPassword);
         $this->entityManager->flush();
 
         return $this->json([
-            'message' => 'Password changed successfully'
+            'message' => 'Password changed successfully',
         ]);
     }
-
 }

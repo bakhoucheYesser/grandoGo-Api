@@ -1,5 +1,19 @@
 <?php
 
+/*
+ * This file is part of the GrandoGo project.
+ *
+ * (c) Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+/*
+ * @author Yesser Bkhouch <yesserbakhouch@hotmail.com>
+ */
+
 namespace App\Entity;
 
 use App\Repository\ProviderServiceAreaRepository;
@@ -28,7 +42,6 @@ class ProviderServiceArea extends BaseEntity
     #[Groups(['service_area_detail'])]
     private ?array $boundaries = null;
 
-
     public function getProvider(): ?Provider
     {
         return $this->provider;
@@ -37,6 +50,7 @@ class ProviderServiceArea extends BaseEntity
     public function setProvider(?Provider $provider): self
     {
         $this->provider = $provider;
+
         return $this;
     }
 
@@ -48,6 +62,7 @@ class ProviderServiceArea extends BaseEntity
     public function setName(string $name): self
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -59,6 +74,7 @@ class ProviderServiceArea extends BaseEntity
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -70,8 +86,7 @@ class ProviderServiceArea extends BaseEntity
     public function setBoundaries(?array $boundaries): self
     {
         $this->boundaries = $boundaries;
+
         return $this;
     }
-
-
 }
