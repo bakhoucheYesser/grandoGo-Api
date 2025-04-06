@@ -1,24 +1,11 @@
 <?php
 
-/*
- * This file is part of the GrandoGo project.
- *
- * (c) Yesser Bkhouch <yesserbakhouch@hotmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
-declare(strict_types=1);
-/*
- * @author Yesser Bkhouch <yesserbakhouch@hotmail.com>
- */
-
 namespace App\Security;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,29 +17,27 @@ use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class CustomJWTAuthenticator extends AbstractAuthenticator
 {
-    private JWTTokenManagerInterface $jwtManager;
-    private UserPasswordHasherInterface $passwordHasher;
-    private UserRepository $userRepository;
+    private const JWT_COOKIE_NAME = 'JWT_TOKEN';
+    private const REFRESH_COOKIE_NAME = 'REFRESH_TOKEN';
 
     public function __construct(
-        JWTTokenManagerInterface $jwtManager,
-        UserPasswordHasherInterface $passwordHasher,
-        UserRepository $userRepository,
+        private readonly JWTTokenManagerInterface $jwtManager,
+        private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly UserRepository $userRepository,
+        private readonly RequestStack $requestStack,
     ) {
-        $this->jwtManager = $jwtManager;
-        $this->passwordHasher = $passwordHasher;
-        $this->userRepository = $userRepository;
     }
 
     public function supports(Request $request): ?bool
     {
         return \in_array($request->getPathInfo(), [
-            '/api/login',
-            '/api/token/refresh',
-        ], true) && $request->isMethod('POST');
+                '/api/login',
+                '/api/token/refresh',
+            ], true) && $request->isMethod('POST');
     }
 
     public function authenticate(Request $request): Passport
@@ -88,7 +73,9 @@ class CustomJWTAuthenticator extends AbstractAuthenticator
 
     private function handleRefreshTokenAuthentication(array $credentials): Passport
     {
-        $refreshToken = $credentials['refresh_token'] ?? null;
+
+        $refreshToken = $credentials['refresh_token'] ??
+            $this->getRefreshTokenFromCookie();
 
         if (!$refreshToken) {
             throw new AuthenticationException('Refresh token is required');
@@ -117,7 +104,8 @@ class CustomJWTAuthenticator extends AbstractAuthenticator
         $user = $token->getUser();
 
         $accessToken = $this->jwtManager->create($user);
-        $refreshToken = $this->jwtManager->create($user);
+        $refreshToken = $this->generateRefreshToken($user);
+
         $userData = [
             'id' => $user->getId(),
             'email' => $user->getEmail(),
@@ -127,12 +115,27 @@ class CustomJWTAuthenticator extends AbstractAuthenticator
             'phoneNumber' => $user->getPhoneNumber(),
         ];
 
-        // Return response
-        return new JsonResponse([
-            'token' => $accessToken,
-            'refresh_token' => $refreshToken,
+        $response = new JsonResponse([
             'user' => $userData,
         ]);
+
+        $response->headers->setCookie(
+            Cookie::create(self::JWT_COOKIE_NAME)
+                ->withValue($accessToken)
+                ->withHttpOnly(true)
+                ->withSecure(true)
+                ->withSameSite('strict')
+        );
+
+        $response->headers->setCookie(
+            Cookie::create(self::REFRESH_COOKIE_NAME)
+                ->withValue($refreshToken)
+                ->withHttpOnly(true)
+                ->withSecure(true)
+                ->withSameSite('strict')
+        );
+
+        return $response;
     }
 
     private function generateRefreshToken(User $user): string
@@ -147,18 +150,19 @@ class CustomJWTAuthenticator extends AbstractAuthenticator
         return $this->jwtManager->create($user, $payload);
     }
 
-    private function isMobileClient(Request $request): bool
-    {
-        $userAgent = $request->headers->get('User-Agent', '');
-
-        return preg_match('/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i', $userAgent);
-    }
-
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         return new JsonResponse([
             'error' => 'Authentication failed',
             'message' => $exception->getMessage(),
         ], Response::HTTP_UNAUTHORIZED);
+    }
+
+
+    private function getRefreshTokenFromCookie(): ?string
+    {
+        $currentRequest = $this->requestStack->getCurrentRequest();
+
+        return $currentRequest?->cookies->get(self::REFRESH_COOKIE_NAME);
     }
 }
