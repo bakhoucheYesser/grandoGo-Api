@@ -93,7 +93,7 @@ class Provider extends BaseEntity
     #[ORM\JoinColumn(name: 'account_manager_id', referencedColumnName: 'id', nullable: true)]
     private ?User $accountManager = null;
 
-    #[ORM\OneToMany(mappedBy: 'provider', targetEntity: ProviderVehicle::class, orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: ProviderVehicle::class, mappedBy: 'provider', orphanRemoval: true)]
     private Collection $vehicles;
 
     #[ORM\OneToMany(targetEntity: ProviderAvailability::class, mappedBy: 'provider', orphanRemoval: true)]

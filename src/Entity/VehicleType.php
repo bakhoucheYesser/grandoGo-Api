@@ -50,7 +50,7 @@ class VehicleType extends BaseEntity
     #[ORM\Column(type: 'integer')]
     private int $luggageCapacity = 0;
 
-    #[ORM\OneToMany(mappedBy: 'vehicleType', targetEntity: ProviderVehicle::class)]
+    #[ORM\OneToMany(targetEntity: ProviderVehicle::class, mappedBy: 'vehicleType')]
     private Collection $vehicles;
 
     public function __construct()
